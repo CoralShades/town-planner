@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { getDefaultNotebook } from "@/lib/api";
+import { useSession } from "@/hooks/useSession";
 import { TopBar } from "@/components/TopBar";
 import { SourcesSidebar } from "@/components/SourcesSidebar";
 import { ChatStream } from "@/components/ChatStream";
@@ -12,6 +13,7 @@ import { FileText, Settings } from "lucide-react";
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, loading: sessionLoading } = useSession();
   const [sessionId, setSessionId] = useState<string>("");
   const [notebookId, setNotebookId] = useState<string>("");
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -30,6 +32,8 @@ const Index = () => {
 
   useEffect(() => {
     const initializeNotebook = async () => {
+      if (sessionLoading || !user) return;
+      
       try {
         const defaultNotebookId = await getDefaultNotebook();
         setNotebookId(defaultNotebookId);
@@ -39,9 +43,9 @@ const Index = () => {
     };
     
     initializeNotebook();
-  }, []);
+  }, [user, sessionLoading]);
 
-  if (!sessionId || !notebookId) {
+  if (sessionLoading || !sessionId || !notebookId) {
     return <div>Loading...</div>;
   }
 
