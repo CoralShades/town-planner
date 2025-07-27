@@ -3,24 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Menu, Bell, User, Trash2, Settings } from "lucide-react";
+import { Menu, Bell, User, Trash2, Settings, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { HistoryDrawer } from "./HistoryDrawer";
 import { SettingsModal } from "./SettingsModal";
+import { HeaderNewChatButton } from "./NewChatButton";
 import { useSettings } from "@/hooks/useSettings";
+import { useSessionManager } from "@/lib/session-management";
 
 interface TopBarProps {
   onClearChats?: () => void;
   onSessionSelect?: (sessionId: string) => void;
+  onNewSession?: () => void;
+  notebookId?: string;
 }
 
-export const TopBar = ({ onClearChats, onSessionSelect }: TopBarProps) => {
+export const TopBar = ({ onClearChats, onSessionSelect, onNewSession, notebookId }: TopBarProps) => {
   const [pendingJobs] = useState(2); // Mock pending jobs count
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const { settings, updateSettings } = useSettings();
+  const { createNewSession } = useSessionManager();
   const llmProvider = settings.llmProvider;
 
   const handleClearChats = () => {
@@ -42,11 +47,28 @@ export const TopBar = ({ onClearChats, onSessionSelect }: TopBarProps) => {
     onSessionSelect?.(sessionId);
   };
 
+  const handleNewSession = async () => {
+    try {
+      const newSessionId = await createNewSession(notebookId);
+      onNewSession?.();
+      toast("New chat session created");
+    } catch (error) {
+      console.error('Failed to create new session:', error);
+      toast("Failed to create new session", { description: "Please try again" });
+    }
+  };
   return (
     <div className="h-14 bg-background border-b flex items-center justify-between px-4 sticky top-0 z-40">
       {/* Left - History Drawer */}
       <div className="flex items-center gap-3">
         <HistoryDrawer onSessionSelect={handleSessionSelect} />
+        <HeaderNewChatButton
+          notebookId={notebookId}
+          onNewSession={handleNewSession}
+          currentSessionId={undefined} // TopBar doesn't track current session
+          showConfirmation={false} // Skip confirmation in header for quick access
+          label="New Chat"
+        />
       </div>
 
       {/* Center - Title */}

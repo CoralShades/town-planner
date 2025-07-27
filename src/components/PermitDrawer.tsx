@@ -75,11 +75,11 @@ export const PermitDrawer = ({ sessionId, notebookId, onTemplateCreated }: Permi
       
       toast({
         title: "Template ready",
-        description: "Your permit template has been generated and sent to n8n for processing.",
+        description: `Your ${data.permitType} template has been generated successfully.`,
       });
       
       if (onTemplateCreated) {
-        onTemplateCreated(result.docx_url);
+        onTemplateCreated(result.report_generation_id || result.docx_url);
       }
       
       reset();
@@ -92,21 +92,16 @@ export const PermitDrawer = ({ sessionId, notebookId, onTemplateCreated }: Permi
 
   return (
     <ComponentErrorBoundary>
-      <div className="w-[340px] bg-sidebar-custom border-l h-full flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="font-medium text-foreground">Assistant Actions</h2>
-          <p className="text-sm text-muted-foreground">Generate permits, view locations, and manage reports.</p>
-        </div>
-        
-        <div className="flex-1 p-4">
-          <Tabs defaultValue="actions" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="actions">Actions</TabsTrigger>
+      <div className="space-y-4 p-4">
+        <div>
+          <Tabs defaultValue="form" className="flex flex-col h-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="form">Form</TabsTrigger>
               <TabsTrigger value="map">Map</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="actions" className="space-y-4 flex-1 overflow-auto">
+            <TabsContent value="form" className="flex-1 overflow-auto">
               <div>
                 <h3 className="text-sm font-medium text-foreground mb-3">
                   Permit Template Generator
@@ -132,7 +127,7 @@ export const PermitDrawer = ({ sessionId, notebookId, onTemplateCreated }: Permi
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="permitType">Permit Type</Label>
-                    <Select {...register("permitType")}>
+                    <Select {...register("permitType")} data-testid="permit-type-select">
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -181,6 +176,7 @@ export const PermitDrawer = ({ sessionId, notebookId, onTemplateCreated }: Permi
                       variant="outline" 
                       className="w-full mt-2"
                       onClick={() => window.open(download, '_blank')}
+                      data-testid="template-preview"
                     >
                       Download Template
                     </Button>

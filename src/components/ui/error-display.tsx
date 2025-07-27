@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ErrorHandler } from '@/hooks/useErrorHandler'; // Add this import
 
 interface ErrorDisplayProps {
   title?: string;
@@ -262,6 +263,7 @@ const LoadingWithError: React.FC<{
   return <>{children}</>;
 };
 
+
 // Error summary component for debugging
 const ErrorSummary: React.FC = () => {
   const [errorStats, setErrorStats] = React.useState<any>(null);
@@ -318,6 +320,8 @@ const ErrorSummary: React.FC = () => {
   );
 };
 
+
+
 // Export all components
 export {
   ErrorDisplay,
@@ -326,5 +330,6 @@ export {
   FileUploadErrorDisplay,
   ValidationErrorDisplay,
   LoadingWithError,
-  ErrorSummary
+  ErrorSummary  // Comment this out
+  
 };

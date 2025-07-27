@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { 
-  ErrorHandler, 
+  ErrorHandler as ErrorHandlerClass, 
   ErrorType, 
   ErrorSeverity, 
   RetryHandler, 
@@ -12,7 +12,7 @@ import {
 
 export const useErrorHandler = () => {
   const handleError = useCallback((error: any, context?: Record<string, any>) => {
-    return ErrorHandler.handle(error, context);
+    return ErrorHandlerClass.handle(error, context);
   }, []);
 
   const handleAsyncError = useCallback(async (
@@ -89,6 +89,9 @@ export const useErrorHandler = () => {
     handleOfflineOperation
   };
 };
+
+// Export ErrorHandler class for components that need direct access
+export { ErrorHandlerClass as ErrorHandler };
 
 // Hook for network status monitoring
 export const useNetworkStatus = () => {
