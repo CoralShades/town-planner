@@ -10,8 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { 
   History, 
   FileText, 
-  Settings, 
-  MapPin, 
   Upload, 
   Search, 
   CheckCircle, 
@@ -21,7 +19,6 @@ import {
   Loader2,
   MessageSquare,
   Calendar,
-  User,
   Trash2
 } from "lucide-react";
 import { supabase } from "@/lib/api";
@@ -33,10 +30,7 @@ import { ComponentErrorBoundary } from "@/components/ErrorBoundary";
 import { NetworkIndicator } from "@/components/NetworkStatus";
 import { SidebarNewChatButton } from "@/components/NewChatButton";
 import { FileUploadErrorDisplay } from "@/components/ui/error-display";
-import { Textarea } from "@/components/ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
-import { MapTab } from "./MapTab";
-import { PermitDrawer } from "./PermitDrawer";
 
 interface UnifiedSidebarProps {
   notebookId: string;
@@ -83,7 +77,6 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<Record<string, boolean>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
-  const [userQuery, setUserQuery] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [uploadError, setUploadError] = useState<string>("");
@@ -102,7 +95,7 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
           .order("updated_at", { ascending: false });
         
         if (error) throw error;
-        return (data || []).map((session: any) => ({
+        return (data || []).map((session) => ({
           id: session.id,
           title: session.title || 'Untitled Session',
           created_at: session.created_at,
@@ -207,7 +200,7 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
 
       try {
         const result = await handleAsyncError(
-          () => uploadFile(file, notebookId, userQuery.trim() || undefined),
+          () => uploadFile(file, notebookId),
           { operation: 'file_upload', fileName: file.name, fileSize: file.size }
         );
         
@@ -216,7 +209,6 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
           description: `${file.name} has been uploaded and sent for processing.`,
         });
         
-        setUserQuery("");
         queryClient.invalidateQueries({ queryKey: ["sources", notebookId] });
         
       } catch (error) {
@@ -349,20 +341,11 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
         
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-5 mx-4 mt-4">
+            <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
               <TabsTrigger value="history" className="text-xs">
                 <History className="w-4 h-4" />
               </TabsTrigger>
               <TabsTrigger value="sources" className="text-xs">
-                <FileText className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="actions" className="text-xs">
-                <Settings className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="map" className="text-xs">
-                <MapPin className="w-4 h-4" />
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="text-xs">
                 <FileText className="w-4 h-4" />
               </TabsTrigger>
             </TabsList>
@@ -461,19 +444,7 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
                   />
                 )}
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    What would you like to know? (Optional)
-                  </label>
-                  <Textarea
-                    placeholder="e.g., What are the setback requirements?"
-                    value={userQuery}
-                    onChange={(e) => setUserQuery(e.target.value)}
-                    className="min-h-[80px] resize-none"
-                    disabled={isUploading}
-                  />
-                </div>
-                
+
                 <div 
                   {...getRootProps()} 
                   className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
@@ -614,31 +585,7 @@ export const UnifiedSidebar = ({ notebookId, sessionId, onSessionSelect }: Unifi
               </ScrollArea>
             </TabsContent>
 
-            {/* Actions Tab */}
-            <TabsContent value="actions" className="flex-1 overflow-auto">
-              <PermitDrawer sessionId={sessionId} notebookId={notebookId} />
-            </TabsContent>
 
-            {/* Map Tab */}
-            <TabsContent value="map" className="flex-1 p-4 overflow-auto">
-              <MapTab sessionId={sessionId} />
-            </TabsContent>
-
-            {/* Reports Tab */}
-            <TabsContent value="reports" className="flex-1 p-4 overflow-auto">
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-foreground">Quick Reports</h3>
-                <p className="text-xs text-muted-foreground">
-                  Access your generated reports from the dedicated Reports panel on the right.
-                </p>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Reports are managed in the right sidebar
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
           </Tabs>
         </div>
       </div>
